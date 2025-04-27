@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}О нас{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card">
+            <div class="card-body">
+                <h1 class="card-title text-center mb-4">О нашем приложении</h1>
+                <div class="card-text">
+                    <p class="mb-3">
+                        Это демонстрационное приложение, созданное с использованием:
+                    </p>
+                    <ul class="list-group list-group-flush mb-4">
+                        <li class="list-group-item">FastAPI - современный веб-фреймворк для Python</li>
+                        <li class="list-group-item">Jinja2 - шаблонизатор для создания HTML</li>
+                        <li class="list-group-item">Bootstrap 5 - фреймворк для создания адаптивного дизайна</li>
+                    </ul>
+                    <div class="text-center">
+                        <a href="/" class="btn btn-secondary">Вернуться на главную</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

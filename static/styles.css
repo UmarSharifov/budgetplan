@@ -1,0 +1,54 @@
+/* Custom styles for Budget Manager */
+.card {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 1rem;
+}
+
+.card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+.table {
+    margin-bottom: 0;
+}
+
+.btn-sm {
+    margin-left: 0.5rem;
+}
+
+/* Form styling */
+.form-control:focus {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .col-md-4 {
+        margin-bottom: 1rem;
+    }
+}
+
+/* Budget card styling */
+.budget-card {
+    transition: transform 0.2s;
+}
+
+.budget-card:hover {
+    transform: translateY(-2px);
+}
+
+/* Expense table styling */
+.expense-table th {
+    background-color: #f8f9fa;
+}
+
+/* Amount formatting */
+.amount-positive {
+    color: #28a745;
+}
+
+.amount-negative {
+    color: #dc3545;
+} 

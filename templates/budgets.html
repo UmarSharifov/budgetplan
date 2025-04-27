@@ -1,0 +1,232 @@
+{% extends "base.html" %}
+
+{% block title %}Все бюджеты{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 style="color: var(--primary-color); text-transform: uppercase; letter-spacing: 2px;">Все бюджеты</h1>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createBudgetModal">
+            <i class="bi bi-plus-lg"></i> Создать бюджет
+        </button>
+    </div>
+
+    <!-- Общая статистика -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Общая статистика</h5>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <p class="card-text">
+                                Общий бюджет: <span class="amount">{{ "{:,.2f}".format(total_budget) }}</span> ₽
+                            </p>
+                        </div>
+                        <div class="col-md-3">
+                            <p class="card-text">
+                                Потрачено: <span class="amount negative">{{ "{:,.2f}".format(total_spent) }}</span> ₽
+                            </p>
+                        </div>
+                        <div class="col-md-3">
+                            <p class="card-text">
+                                Бюджет на развлечения: <span class="amount">{{ "{:,.2f}".format(total_entertainment_budget) }}</span> ₽
+                            </p>
+                        </div>
+                        <div class="col-md-3">
+                            <p class="card-text">
+                                Бюджет на питание: <span class="amount">{{ "{:,.2f}".format(total_food_budget) }}</span> ₽
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Список бюджетов -->
+    <div class="row">
+        {% for budget in budgets %}
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <h5 class="card-title mb-0">
+                            {{ budget.start_date.strftime('%d.%m.%Y') }} - {{ budget.end_date.strftime('%d.%m.%Y') }}
+                        </h5>
+                        <div>
+                            <button class="btn btn-sm btn-primary me-2" onclick="editBudget({{ budget.id }}, '{{ budget.start_date.strftime('%Y-%m-%d') }}', '{{ budget.end_date.strftime('%Y-%m-%d') }}', {{ budget.entertainment_amount }}, {{ budget.food_amount }})">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteBudget({{ budget.id }})">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <p class="card-text">
+                                Общий бюджет: <span class="amount">{{ "{:,.2f}".format(budget.entertainment_amount + budget.food_amount) }}</span> ₽<br>
+                                Потрачено: <span class="amount negative">{{ "{:,.2f}".format(budget.total_spent) }}</span> ₽<br>
+                                Осталось: <span class="amount">{{ "{:,.2f}".format((budget.entertainment_amount + budget.food_amount) - budget.total_spent) }}</span> ₽
+                            </p>
+                        </div>
+                        <div class="col-md-4">
+                            <p class="card-text">
+                                Развлечения: <span class="amount">{{ "{:,.2f}".format(budget.entertainment_amount) }}</span> ₽<br>
+                                Потрачено: <span class="amount negative">{{ "{:,.2f}".format(budget.entertainment_spent) }}</span> ₽<br>
+                                Осталось: <span class="amount">{{ "{:,.2f}".format(budget.entertainment_remaining) }}</span> ₽
+                            </p>
+                        </div>
+                        <div class="col-md-4">
+                            <p class="card-text">
+                                Питание: <span class="amount">{{ "{:,.2f}".format(budget.food_amount) }}</span> ₽<br>
+                                Потрачено: <span class="amount negative">{{ "{:,.2f}".format(budget.food_spent) }}</span> ₽<br>
+                                Осталось: <span class="amount">{{ "{:,.2f}".format(budget.food_remaining) }}</span> ₽
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Модальное окно создания бюджета -->
+<div class="modal fade" id="createBudgetModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content" style="background: var(--card-bg); border: 1px solid rgba(255, 255, 255, 0.1);">
+            <div class="modal-header" style="border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+                <h5 class="modal-title" style="color: var(--primary-color);">Создать новый бюджет</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" style="filter: invert(1);"></button>
+            </div>
+            <div class="modal-body">
+                <form action="/budgets/" method="post">
+                    <div class="mb-3">
+                        <label for="start_date" class="form-label">Дата начала</label>
+                        <input type="date" class="form-control" id="start_date" name="start_date" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="end_date" class="form-label">Дата окончания</label>
+                        <input type="date" class="form-control" id="end_date" name="end_date" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="entertainment_amount" class="form-label">Бюджет на развлечения</label>
+                        <input type="number" step="0.01" class="form-control" id="entertainment_amount" name="entertainment_amount" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="food_amount" class="form-label">Бюджет на питание</label>
+                        <input type="number" step="0.01" class="form-control" id="food_amount" name="food_amount" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Создать</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно редактирования бюджета -->
+<div class="modal fade" id="editBudgetModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content" style="background: var(--card-bg); border: 1px solid rgba(255, 255, 255, 0.1);">
+            <div class="modal-header" style="border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+                <h5 class="modal-title" style="color: var(--primary-color);">Редактировать бюджет</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" style="filter: invert(1);"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editBudgetForm">
+                    <input type="hidden" id="edit_budget_id" name="budget_id">
+                    <div class="mb-3">
+                        <label for="edit_start_date" class="form-label">Дата начала</label>
+                        <input type="date" class="form-control" id="edit_start_date" name="start_date" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_end_date" class="form-label">Дата окончания</label>
+                        <input type="date" class="form-control" id="edit_end_date" name="end_date" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_entertainment_amount" class="form-label">Бюджет на развлечения</label>
+                        <input type="number" step="0.01" class="form-control" id="edit_entertainment_amount" name="entertainment_amount" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_food_amount" class="form-label">Бюджет на питание</label>
+                        <input type="number" step="0.01" class="form-control" id="edit_food_amount" name="food_amount" required>
+                    </div>
+                    <button type="button" class="btn btn-primary w-100" onclick="saveBudgetChanges()">Сохранить</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Инициализация модальных окон
+    var createBudgetModal = new bootstrap.Modal(document.getElementById('createBudgetModal'));
+    var editBudgetModal = new bootstrap.Modal(document.getElementById('editBudgetModal'));
+
+    // Функция для редактирования бюджета
+    function editBudget(id, startDate, endDate, entertainmentAmount, foodAmount) {
+        document.getElementById('edit_budget_id').value = id;
+        document.getElementById('edit_start_date').value = startDate;
+        document.getElementById('edit_end_date').value = endDate;
+        document.getElementById('edit_entertainment_amount').value = entertainmentAmount;
+        document.getElementById('edit_food_amount').value = foodAmount;
+        editBudgetModal.show();
+    }
+
+    // Функция для сохранения изменений бюджета
+    async function saveBudgetChanges() {
+        const budgetId = document.getElementById('edit_budget_id').value;
+        const formData = {
+            start_date: document.getElementById('edit_start_date').value,
+            end_date: document.getElementById('edit_end_date').value,
+            entertainment_amount: parseFloat(document.getElementById('edit_entertainment_amount').value),
+            food_amount: parseFloat(document.getElementById('edit_food_amount').value)
+        };
+
+        try {
+            const response = await fetch(`/budgets/edit/${budgetId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData)
+            });
+
+            if (response.ok) {
+                window.location.reload();
+            } else {
+                const error = await response.json();
+                alert(error.detail);
+            }
+        } catch (error) {
+            alert('Произошла ошибка при сохранении изменений');
+        }
+    }
+
+    // Функция для удаления бюджета
+    async function deleteBudget(id) {
+        if (confirm('Вы уверены, что хотите удалить этот бюджет?')) {
+            try {
+                const response = await fetch('/budgets/delete', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ budget_id: id })
+                });
+
+                if (response.ok) {
+                    window.location.reload();
+                } else {
+                    const error = await response.json();
+                    alert(error.detail);
+                }
+            } catch (error) {
+                alert('Произошла ошибка при удалении бюджета');
+            }
+        }
+    }
+</script>
+{% endblock %} 

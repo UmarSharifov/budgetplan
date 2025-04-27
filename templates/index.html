@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block title %}Бюджет{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 style="color: var(--primary-color); text-transform: uppercase; letter-spacing: 2px;">Текущий бюджет</h1>
+        <a href="/budgets" class="btn btn-primary">
+            <i class="bi bi-list-ul"></i> Все бюджеты
+        </a>
+    </div>
+
+    {% if current_budget %}
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Период</h5>
+                    <p class="card-text">
+                        {{ current_budget.start_date.strftime('%d.%m.%Y') }} - {{ current_budget.end_date.strftime('%d.%m.%Y') }}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <!-- Общий бюджет -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Общий бюджет</h5>
+                    <p class="card-text">
+                        Всего: <span class="amount">{{ "{:,.2f}".format(current_budget.entertainment_amount + current_budget.food_amount) }}</span> ₽<br>
+                        Потрачено: <span class="amount negative">{{ "{:,.2f}".format(current_budget.total_spent) }}</span> ₽<br>
+                        Осталось: <span class="amount">{{ "{:,.2f}".format((current_budget.entertainment_amount + current_budget.food_amount) - current_budget.total_spent) }}</span> ₽
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Бюджет на развлечения -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Развлечения</h5>
+                    <p class="card-text">
+                        Всего: <span class="amount">{{ "{:,.2f}".format(current_budget.entertainment_amount) }}</span> ₽<br>
+                        Потрачено: <span class="amount negative">{{ "{:,.2f}".format(current_budget.entertainment_spent) }}</span> ₽<br>
+                        Осталось: <span class="amount">{{ "{:,.2f}".format(current_budget.entertainment_remaining) }}</span> ₽
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Бюджет на питание -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Питание</h5>
+                    <p class="card-text">
+                        Всего: <span class="amount">{{ "{:,.2f}".format(current_budget.food_amount) }}</span> ₽<br>
+                        Потрачено: <span class="amount negative">{{ "{:,.2f}".format(current_budget.food_spent) }}</span> ₽<br>
+                        Осталось: <span class="amount">{{ "{:,.2f}".format(current_budget.food_remaining) }}</span> ₽
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Добавить расход</h5>
+                    <form action="/expenses/" method="post">
+                        <input type="hidden" name="budget_id" value="{{ current_budget.id }}">
+                        <div class="row">
+                            <div class="col-md-3 mb-3">
+                                <label for="date" class="form-label">Дата</label>
+                                <input type="date" class="form-control" id="date" name="date" required>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="description" class="form-label">Описание</label>
+                                <input type="text" class="form-control" id="description" name="description" required>
+                            </div>
+                            <div class="col-md-2 mb-3">
+                                <label for="amount" class="form-label">Сумма</label>
+                                <input type="number" step="0.01" class="form-control" id="amount" name="amount" required>
+                            </div>
+                            <div class="col-md-2 mb-3">
+                                <label for="category" class="form-label">Категория</label>
+                                <select class="form-select" id="category" name="category" required>
+                                    <option value="entertainment">Развлечения</option>
+                                    <option value="food">Питание</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2 mb-3">
+                                <label class="form-label">&nbsp;</label>
+                                <button type="submit" class="btn btn-primary w-100">Добавить</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Расходы</h5>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Дата</th>
+                                    <th>Описание</th>
+                                    <th>Категория</th>
+                                    <th>Сумма</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for expense in current_expenses %}
+                                <tr>
+                                    <td>{{ expense.date.strftime('%d.%m.%Y') }}</td>
+                                    <td>{{ expense.description }}</td>
+                                    <td>
+                                        {% if expense.category.value == 'entertainment' %}
+                                        <span style="color: var(--primary-color);">Развлечения</span>
+                                        {% else %}
+                                        <span style="color: var(--secondary-color);">Питание</span>
+                                        {% endif %}
+                                    </td>
+                                    <td><span class="amount negative">{{ "{:,.2f}".format(expense.amount) }}</span> ₽</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        Нет активного бюджета. <a href="/budgets" class="alert-link">Создать новый бюджет</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %} 
